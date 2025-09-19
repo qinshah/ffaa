@@ -29,7 +29,6 @@ class MacOSAppService {
       apps.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       return apps;
     } catch (e) {
-      print('获取应用列表失败: $e');
       return [];
     }
   }
@@ -74,7 +73,7 @@ class MacOSAppService {
             }
           }
         } catch (e) {
-          print('解析Info.plist失败 ${appDir.path}: $e');
+          // 忽略解析错误
         }
       }
 
@@ -86,7 +85,6 @@ class MacOSAppService {
         iconPath: iconPath,
       );
     } catch (e) {
-      print('获取应用信息失败 ${appDir.path}: $e');
       return null;
     }
   }

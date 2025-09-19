@@ -13,7 +13,6 @@ class AppLauncher {
         throw UnimplementedError('当前平台不支持应用启动功能');
       }
     } catch (e) {
-      print('启动应用失败: $e');
       return false;
     }
   }
@@ -28,7 +27,6 @@ class AppLauncher {
       
       return result.exitCode == 0;
     } catch (e) {
-      print('启动macOS应用失败: $e');
       return false;
     }
   }
@@ -45,7 +43,6 @@ class AppLauncher {
       }
       return false;
     } catch (e) {
-      print('在Finder中显示应用失败: $e');
       return false;
     }
   }
