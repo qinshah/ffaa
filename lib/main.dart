@@ -1,7 +1,10 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:ffaa/services/app_action_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:forui/localizations.dart';
 import 'package:forui/theme.dart';
+import 'package:system_theme/system_theme.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
@@ -20,13 +23,21 @@ Future<void> main() async {
   // 快捷键注册
   AppAction.registerHitKey();
 
-  runApp(const FfaaApp());
+  // 初始化加载系统主题色
+  await SystemTheme.accentColor.load();
+
+  // 初始化app主题模式
+  final initialThemeMode = await AdaptiveTheme.getThemeMode();
+
+  runApp(FfaaApp(initialThemeMode: initialThemeMode));
 }
 
 // TODO 整理代码
 class FfaaApp extends StatefulWidget {
   static final searchInputNode = FocusNode();
-  const FfaaApp({super.key});
+  const FfaaApp({super.key, required this.initialThemeMode});
+
+  final AdaptiveThemeMode? initialThemeMode;
 
   @override
   State<FfaaApp> createState() => _FfaaAppState();
@@ -110,15 +121,35 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
 
   @override
   Widget build(BuildContext context) {
-    final fThemeData = FThemes.zinc.light;
-    return GestureDetector(
-      // 空白区域均可拖拽移动窗口
-      onPanStart: (_) => windowManager.startDragging(),
-      child: MaterialApp(
-        theme: fThemeData.toApproximateMaterialTheme(),
-        home: const HomePage(),
-        debugShowCheckedModeBanner: false,
-      ),
+    // TODO 主要颜色使用系统主题色
+    // final accentColor = SystemTheme.accentColor.accent;
+    final fTheme = FThemes.blue;
+    final lightTheme = fTheme.light.toApproximateMaterialTheme();
+    final darkTheme = fTheme.dark.toApproximateMaterialTheme();
+    return AdaptiveTheme(
+      initial: widget.initialThemeMode ?? AdaptiveThemeMode.system,
+      light: lightTheme,
+      dark: darkTheme,
+      builder: (lightTheme, darkTheme) {
+        return GestureDetector(
+          // 空白区域均可拖拽移动窗口
+          onPanStart: (_) => windowManager.startDragging(),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            localizationsDelegates: FLocalizations.localizationsDelegates,
+            supportedLocales: FLocalizations.supportedLocales,
+            // builder: (context, child) => FTheme(
+            //   data: AdaptiveTheme.of(context).brightness == Brightness.light
+            //       ? fTheme.light
+            //       : fTheme.dark,
+            //   child: child!,
+            // ),
+            home: const HomePage(),
+          ),
+        );
+      },
     );
   }
 }

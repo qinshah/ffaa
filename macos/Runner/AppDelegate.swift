@@ -1,6 +1,8 @@
 import Cocoa
 import FlutterMacOS
 
+
+// TODO 做笔记，下面是mac上隐藏窗口后应用不关闭的代码
 @main
 class AppDelegate: FlutterAppDelegate {
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
