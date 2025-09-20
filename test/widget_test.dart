@@ -5,7 +5,7 @@ import 'package:ffaa/main.dart';
 void main() {
   testWidgets('FFAA app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const FFAAApp());
+    await tester.pumpWidget(const FfaaApp());
 
     // Verify that the app title is displayed
     expect(find.text('应用程序'), findsOneWidget);

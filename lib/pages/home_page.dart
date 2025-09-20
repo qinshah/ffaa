@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import '../models/app_info.dart';
 import '../services/platform_service.dart';
 import '../widgets/app_icon_widget.dart';
@@ -59,7 +60,8 @@ class _HomePageState extends State<HomePage> {
     }
     return _apps.where((app) {
       return app.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (app.bundleId?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+          (app.bundleId?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+              false);
     }).toList();
   }
 
@@ -184,6 +186,16 @@ class _HomePageState extends State<HomePage> {
             ),
             onPressed: _toggleViewMode,
             tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
+          ),
+          TextButton(
+            child: const Text('隐藏界面'),
+            onPressed: () {
+              windowManager.hide();
+              Future.delayed(const Duration(seconds: 2), () {
+                windowManager.show();
+                windowManager.focus();
+              });
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -330,7 +342,8 @@ class _HomePageState extends State<HomePage> {
           appInfo: apps[index],
           isGridView: true,
           onTap: () => _launchApp(apps[index]),
-          onSecondaryTap: (position) => _showAppContextMenu(apps[index], position),
+          onSecondaryTap: (position) =>
+              _showAppContextMenu(apps[index], position),
         );
       },
     );
@@ -345,7 +358,8 @@ class _HomePageState extends State<HomePage> {
           appInfo: apps[index],
           isGridView: false,
           onTap: () => _launchApp(apps[index]),
-          onSecondaryTap: (position) => _showAppContextMenu(apps[index], position),
+          onSecondaryTap: (position) =>
+              _showAppContextMenu(apps[index], position),
         );
       },
     );

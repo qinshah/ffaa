@@ -9,8 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^2.1.1
-  process: ^5.0.0
+  forui: ^0.15.1 # shadcn设计语言
+  path_provider: ^2.1.1 # 文件路径
+  process: ^5.0.0 # 进程
+  window_manager: ^0.5.1 # 窗口管理
+  hotkey_manager: ^0.2.3 # 快捷键
 
 dev_dependencies:
   flutter_test:
