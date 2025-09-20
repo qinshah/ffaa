@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
         windowManager.hide();
         debugPrint('隐藏窗口(启动app后)');
       } else {
-        // TODO 失败处理
+        // TODO 应用启动失败的处理
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -7,30 +7,76 @@ import '../models/app_info.dart';
 class MacOSAppService {
   static const ProcessManager _processManager = LocalProcessManager();
 
-  // TODO 扫描文件夹子节点中的应用
+  // 应用目录列表
+  static const List<String> _appDirectories = [
+    '/Applications',
+    '/System/Applications',
+  ];
+
   static Future<List<AppInfo>> getInstalledApps() async {
     try {
-      final appDirentities = Directory('/Applications').listSync();
-      appDirentities.addAll(Directory('/System/Applications').listSync());
-
-      debugPrint('应用文件夹共有${appDirentities.length}个子节点');
-
       final List<AppInfo> apps = [];
-      for (final FileSystemEntity entity in appDirentities) {
-        if (entity is Directory && entity.path.endsWith('.app')) {
-          final appInfo = await _getAppInfo(entity);
-          if (appInfo != null) {
-            apps.add(appInfo);
-          }
+
+      // 扫描所有应用目录
+      for (final String dirPath in _appDirectories) {
+        final Directory dir = Directory(dirPath);
+        if (await dir.exists()) {
+          debugPrint('正在扫描目录: $dirPath');
+          await _scanDirectoryRecursively(dir, apps);
         }
       }
+
+      // 添加用户应用目录（如果存在）
+      final String? homeDir = Platform.environment['HOME'];
+      if (homeDir != null) {
+        final Directory userAppsDir = Directory('$homeDir/Applications');
+        if (await userAppsDir.exists()) {
+          debugPrint('正在扫描用户应用目录: ${userAppsDir.path}');
+          await _scanDirectoryRecursively(userAppsDir, apps);
+        }
+      }
+
       debugPrint('共扫描出${apps.length}个应用');
 
       // 按应用名称排序
       apps.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       return apps;
     } catch (e) {
+      debugPrint('扫描应用时出错: $e');
       return [];
+    }
+  }
+
+  /// 递归扫描目录中的应用
+  static Future<void> _scanDirectoryRecursively(
+      Directory directory, List<AppInfo> apps,
+      {int depth = 0}) async {
+    try {
+      // 限制递归深度，避免无限递归
+      if (depth > 3) return;
+
+      await for (final FileSystemEntity entity in directory.list()) {
+        if (entity is Directory) {
+          if (entity.path.endsWith('.app')) {
+            // 找到应用，解析应用信息
+            final appInfo = await _getAppInfo(entity);
+            if (appInfo != null) {
+              apps.add(appInfo);
+              debugPrint('找到应用: ${appInfo.name} (${entity.path})');
+            }
+          } else {
+            // 普通文件夹，继续递归扫描
+            try {
+              await _scanDirectoryRecursively(entity, apps, depth: depth + 1);
+            } catch (e) {
+              // 忽略无权限访问的目录
+              debugPrint('无法访问目录 ${entity.path}: $e');
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('扫描目录 ${directory.path} 时出错: $e');
     }
   }
 
@@ -65,6 +111,7 @@ class MacOSAppService {
                 plistData['CFBundleVersion'] as String?;
 
             // 获取图标信息
+            // TODO 个别应用图标加载不出来
             final iconFile = plistData['CFBundleIconFile'] as String?;
             if (iconFile != null) {
               iconPath = '${appDir.path}/Contents/Resources/$iconFile';
