@@ -79,11 +79,14 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener {
   @override
   Widget build(BuildContext context) {
     final fThemeData = FThemes.zinc.light;
-    return MaterialApp(
-      title: 'FlutterFAA(随时随地查找)',
-      theme: fThemeData.toApproximateMaterialTheme(),
-      home: const HomePage(),
-      debugShowCheckedModeBanner: false,
+    return GestureDetector(
+      // 空白区域均可拖拽移动窗口
+      onPanStart: (_) => windowManager.startDragging(),
+      child: MaterialApp(
+        theme: fThemeData.toApproximateMaterialTheme(),
+        home: const HomePage(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

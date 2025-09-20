@@ -24,7 +24,6 @@ class AppAction {
   }
 
   static final values = <AppAction>[
-    // TODO 实现隐藏功能
     AppAction(
       '隐藏/显示',
       HotKey(
@@ -36,7 +35,8 @@ class AppAction {
           windowManager.hide();
           debugPrint('隐藏窗口(快捷键)');
         } else {
-          windowManager.show().then((_) => windowManager.focus());
+          await windowManager.show();
+          windowManager.focus();
           debugPrint('显示窗口(快捷键)');
         }
       },
