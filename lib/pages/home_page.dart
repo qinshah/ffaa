@@ -328,6 +328,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildGridView(List<AppInfo> apps) {
     return GridView.builder(
+      key: PageStorageKey('GridView'),
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 120,
@@ -350,6 +351,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildListView(List<AppInfo> apps) {
     return ListView.builder(
+      key: PageStorageKey('ListView'),
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: apps.length,
       itemBuilder: (context, index) {
