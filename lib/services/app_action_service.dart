@@ -1,20 +1,28 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter/material.dart';
+import '../pages/settings_page.dart';
 
-class AppAction {
+class AppActionService {
   final String name;
 
   HotKey hotKey;
 
   final ValueChanged<HotKey> keyDownAction;
 
-  AppAction(
+  static BuildContext? _context;
+
+  AppActionService(
     this.name, {
     required this.hotKey,
     required this.keyDownAction,
   });
+
+  /// 设置全局上下文
+  static void setContext(BuildContext context) {
+    _context = context;
+  }
 
   /// 注册快捷键
   static void registerHitKey() {
@@ -39,14 +47,34 @@ class AppAction {
     }
   }
 
-  static final values = <AppAction>[
-    AppAction(
+  /// 打开设置页
+  static void openSettings(_) async {
+    if (_context != null) {
+      await windowManager.show();
+      windowManager.focus();
+      Navigator.of(_context!).push(
+        MaterialPageRoute(builder: (context) => const SettingsPage()),
+      );
+      debugPrint('打开设置页');
+    }
+  }
+
+  static final values = <AppActionService>[
+    AppActionService(
       '隐藏/显示',
       hotKey: HotKey(
         key: PhysicalKeyboardKey.keyH,
         modifiers: [HotKeyModifier.alt],
       ),
       keyDownAction: taggleShowWindow,
+    ),
+    AppActionService(
+      '设置',
+      hotKey: HotKey(
+        key: PhysicalKeyboardKey.keyS,
+        modifiers: [HotKeyModifier.alt],
+      ),
+      keyDownAction: openSettings,
     ),
   ];
 }

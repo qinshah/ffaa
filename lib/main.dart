@@ -21,7 +21,7 @@ Future<void> main() async {
   windowManager.waitUntilReadyToShow(windowOptions, windowManager.show);
 
   // 快捷键注册
-  AppAction.registerHitKey();
+  AppActionService.registerHitKey();
 
   // 初始化加载系统主题色
   await SystemTheme.accentColor.load();
@@ -62,6 +62,13 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
     await trayManager.setIcon('assets/img/tray-logo.png');
     final menu = Menu(items: [
       MenuItem(
+        label: '设置',
+        onClick: (_) {
+          AppActionService.openSettings(null);
+        },
+      ),
+      MenuItem.separator(),
+      MenuItem(
         label: '退出',
         onClick: (_) {
           debugPrint('主动关闭应用');
@@ -74,10 +81,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
 
   // 左键托盘同样切换隐藏/显示窗口
   @override
-  void onTrayIconMouseDown() {
-    AppAction.taggleShowWindow(null);
-    super.onTrayIconMouseDown();
-  }
+  void onTrayIconMouseDown() => AppActionService.taggleShowWindow(null);
 
 // 右键托盘弹出菜单
   @override
@@ -140,12 +144,11 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
             darkTheme: darkTheme,
             localizationsDelegates: FLocalizations.localizationsDelegates,
             supportedLocales: FLocalizations.supportedLocales,
-            // builder: (context, child) => FTheme(
-            //   data: AdaptiveTheme.of(context).brightness == Brightness.light
-            //       ? fTheme.light
-            //       : fTheme.dark,
-            //   child: child!,
-            // ),
+            builder: (context, child) {
+              // 设置全局上下文供AppActionService使用
+              AppActionService.setContext(context);
+              return child!;
+            },
             home: const HomePage(),
           ),
         );
