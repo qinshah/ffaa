@@ -171,23 +171,14 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.apps, size: 24),
-            SizedBox(width: 8),
-            Text(
-              '应用程序',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        leading: Icon(Icons.apps),
+        title: Text(
+          '应用程序',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
           IconButton(
@@ -196,6 +187,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: _toggleViewMode,
             tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
           ),
+          const SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () => context.push(SettingsPage()),
@@ -205,10 +197,8 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // 搜索栏
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
+          Card(
+            // 搜索栏
             child: TextField(
               autofocus: true,
               focusNode: FfaaApp.searchInputNode,
@@ -232,7 +222,6 @@ class _HomePageState extends State<HomePage> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey[100],
               ),
               onChanged: (value) {
                 setState(() {
