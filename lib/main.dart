@@ -2,6 +2,7 @@ import 'package:ffaa/services/app_action_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:forui/theme.dart';
+import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
 
@@ -22,6 +23,7 @@ Future<void> main() async {
   runApp(const FfaaApp());
 }
 
+// TODO 整理代码
 class FfaaApp extends StatefulWidget {
   static final searchInputNode = FocusNode();
   const FfaaApp({super.key});
@@ -30,22 +32,52 @@ class FfaaApp extends StatefulWidget {
   State<FfaaApp> createState() => _FfaaAppState();
 }
 
-class _FfaaAppState extends State<FfaaApp> with WindowListener {
+class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   @override
   void initState() {
     // 监听窗口事件
     windowManager.addListener(this);
-    // 监听键盘事件(esc隐藏窗口)
+    // 监听托盘事件
+    trayManager.addListener(this);
+    // 监听键盘事件(Esc隐藏窗口)
     HardwareKeyboard.instance.addHandler(_escToHideApp);
+    // 托盘菜单
+    _initTrayMenu();
     super.initState();
   }
 
-  /// esc隐藏窗口
+  /// 初始化托盘菜单
+  void _initTrayMenu() async {
+    await trayManager.setIcon('assets/img/tray-logo.png');
+    final menu = Menu(items: [
+      MenuItem(
+        label: '退出',
+        onClick: (_) {
+          debugPrint('主动关闭应用');
+          SystemNavigator.pop(animated: true);
+        },
+      ),
+    ]);
+    trayManager.setContextMenu(menu);
+  }
+
+  // 左键托盘同样切换隐藏/显示窗口
+  @override
+  void onTrayIconMouseDown() {
+    AppAction.taggleShowWindow(null);
+    super.onTrayIconMouseDown();
+  }
+
+// 右键托盘弹出菜单
+  @override
+  void onTrayIconRightMouseDown() => trayManager.popUpContextMenu();
+
+  /// Esc隐藏窗口
   bool _escToHideApp(KeyEvent event) {
     if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.escape) {
       windowManager.hide();
-      debugPrint('隐藏窗口(Esc)');
+      debugPrint('Esc隐藏窗口');
       return true;
     }
     return false;
@@ -63,7 +95,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener {
     windowManager.isVisible().then((visible) {
       if (visible) {
         windowManager.hide();
-        debugPrint('隐藏窗口(失去焦点)');
+        debugPrint('窗口失去焦点自动隐藏');
       }
     });
     super.onWindowBlur();

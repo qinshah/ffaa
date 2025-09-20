@@ -10,7 +10,11 @@ class AppAction {
 
   final ValueChanged<HotKey> keyDownAction;
 
-  AppAction(this.name, this.hotKey, this.keyDownAction);
+  AppAction(
+    this.name, {
+    required this.hotKey,
+    required this.keyDownAction,
+  });
 
   /// 注册快捷键
   static void registerHitKey() {
@@ -23,23 +27,26 @@ class AppAction {
     }
   }
 
+  /// 隐藏/显示窗口
+  static void taggleShowWindow(_) async {
+    if (await windowManager.isFocused()) {
+      windowManager.hide();
+      debugPrint('主动隐藏窗口');
+    } else {
+      await windowManager.show();
+      windowManager.focus();
+      debugPrint('主动显示窗口');
+    }
+  }
+
   static final values = <AppAction>[
     AppAction(
       '隐藏/显示',
-      HotKey(
+      hotKey: HotKey(
         key: PhysicalKeyboardKey.keyH,
         modifiers: [HotKeyModifier.alt],
       ),
-      (_) async {
-        if (await windowManager.isFocused()) {
-          windowManager.hide();
-          debugPrint('隐藏窗口(快捷键)');
-        } else {
-          await windowManager.show();
-          windowManager.focus();
-          debugPrint('显示窗口(快捷键)');
-        }
-      },
+      keyDownAction: taggleShowWindow,
     ),
   ];
 }

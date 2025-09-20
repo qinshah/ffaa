@@ -14,6 +14,7 @@ dependencies:
   process: ^5.0.0 # 进程
   window_manager: ^0.5.1 # 窗口管理
   hotkey_manager: ^0.2.3 # 快捷键
+  tray_manager: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -22,3 +23,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/img/
