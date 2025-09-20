@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+
+import '../utils/nav.dart';
 import '../main.dart';
 import '../models/app_info.dart';
 import '../services/platform_service.dart';
 import '../widgets/app_icon_widget.dart';
 import '../utils/app_launcher.dart';
+import 'settings_page.dart';
 
 enum ViewMode { grid, list }
 
@@ -189,10 +192,13 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(
-              _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view,
-            ),
+                _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
             onPressed: _toggleViewMode,
             tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
+          ),
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => context.push(SettingsPage()),
           ),
           const SizedBox(width: 8),
         ],
