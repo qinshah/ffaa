@@ -1,22 +1,22 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:process/process.dart';
 import '../models/app_info.dart';
 
 class MacOSAppService {
   static const ProcessManager _processManager = LocalProcessManager();
-  static const String _applicationsPath = '/Applications';
 
+  // TODO 扫描文件夹子节点中的应用
   static Future<List<AppInfo>> getInstalledApps() async {
     try {
-      final List<AppInfo> apps = [];
-      final Directory applicationsDir = Directory(_applicationsPath);
-      
-      if (!await applicationsDir.exists()) {
-        throw Exception('Applications目录不存在');
-      }
+      final appDirentities = Directory('/Applications').listSync();
+      appDirentities.addAll(Directory('/System/Applications').listSync());
 
-      await for (final FileSystemEntity entity in applicationsDir.list()) {
+      debugPrint('应用文件夹共有${appDirentities.length}个子节点');
+
+      final List<AppInfo> apps = [];
+      for (final FileSystemEntity entity in appDirentities) {
         if (entity is Directory && entity.path.endsWith('.app')) {
           final appInfo = await _getAppInfo(entity);
           if (appInfo != null) {
@@ -24,6 +24,7 @@ class MacOSAppService {
           }
         }
       }
+      debugPrint('共扫描出${apps.length}个应用');
 
       // 按应用名称排序
       apps.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -37,7 +38,7 @@ class MacOSAppService {
     try {
       final String appName = _getAppNameFromPath(appDir.path);
       final String infoPlistPath = '${appDir.path}/Contents/Info.plist';
-      
+
       String? bundleId;
       String? version;
       String? iconPath;
@@ -56,13 +57,13 @@ class MacOSAppService {
           ]);
 
           if (result.exitCode == 0) {
-            final Map<String, dynamic> plistData = 
+            final Map<String, dynamic> plistData =
                 json.decode(result.stdout as String);
-            
+
             bundleId = plistData['CFBundleIdentifier'] as String?;
             version = plistData['CFBundleShortVersionString'] as String? ??
-                     plistData['CFBundleVersion'] as String?;
-            
+                plistData['CFBundleVersion'] as String?;
+
             // 获取图标信息
             final iconFile = plistData['CFBundleIconFile'] as String?;
             if (iconFile != null) {
