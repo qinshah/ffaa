@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+import '../main.dart';
 import '../models/app_info.dart';
 import '../services/platform_service.dart';
 import '../widgets/app_icon_widget.dart';
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadApps();
+    _getApps();
   }
 
   @override
@@ -34,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  Future<void> _loadApps() async {
+  Future<void> _getApps() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -72,16 +73,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _launchApp(AppInfo app) async {
-    final success = await AppLauncher.launchApp(app);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '正在启动 ${app.name}' : '启动 ${app.name} 失败'),
-          duration: const Duration(seconds: 1),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
-    }
+    AppLauncher.launchApp(app).then((succeeded) {
+      if (succeeded) {
+        windowManager.hide();
+        debugPrint('隐藏窗口(启动app后)');
+      } else {
+        // TODO 失败处理
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('启动 ${app.name} 失败'),
+            duration: const Duration(seconds: 1),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
   }
 
   void _showAppContextMenu(AppInfo app, Offset position) {
@@ -187,16 +194,6 @@ class _HomePageState extends State<HomePage> {
             onPressed: _toggleViewMode,
             tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
           ),
-          TextButton(
-            child: const Text('隐藏界面'),
-            onPressed: () {
-              windowManager.hide();
-              Future.delayed(const Duration(seconds: 2), () {
-                windowManager.show();
-                windowManager.focus();
-              });
-            },
-          ),
           const SizedBox(width: 8),
         ],
       ),
@@ -207,6 +204,8 @@ class _HomePageState extends State<HomePage> {
             color: Colors.white,
             padding: const EdgeInsets.all(16),
             child: TextField(
+              autofocus: true,
+              focusNode: FfaaApp.searchInputNode,
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: '搜索应用...',
@@ -288,7 +287,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadApps,
+              onPressed: _getApps,
               child: const Text('重试'),
             ),
           ],

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
-class AppAction{
+class AppAction {
   final String name;
 
   HotKey hotKey;
@@ -34,10 +34,10 @@ class AppAction{
       (_) async {
         if (await windowManager.isFocused()) {
           windowManager.hide();
-          debugPrint('隐藏App(快捷键)');
+          debugPrint('隐藏窗口(快捷键)');
         } else {
-          windowManager.show();
-          debugPrint('显示App(快捷键)');
+          windowManager.show().then((_) => windowManager.focus());
+          debugPrint('显示窗口(快捷键)');
         }
       },
     ),

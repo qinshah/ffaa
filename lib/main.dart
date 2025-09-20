@@ -1,5 +1,6 @@
 import 'package:ffaa/services/app_action_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:forui/theme.dart';
 import 'package:window_manager/window_manager.dart';
 import 'pages/home_page.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
 }
 
 class FfaaApp extends StatefulWidget {
+  static final searchInputNode = FocusNode();
   const FfaaApp({super.key});
 
   @override
@@ -33,18 +35,45 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener {
   void initState() {
     // 监听窗口事件
     windowManager.addListener(this);
+    // 监听键盘事件(esc隐藏窗口)
+    HardwareKeyboard.instance.addHandler(_escToHideApp);
     super.initState();
+  }
+
+  /// esc隐藏窗口
+  bool _escToHideApp(KeyEvent event) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      windowManager.hide();
+      debugPrint('隐藏窗口(Esc)');
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_escToHideApp);
+    super.dispose();
   }
 
   @override
   void onWindowBlur() {
+    // 窗口失去焦点时自动隐藏
     windowManager.isVisible().then((visible) {
       if (visible) {
         windowManager.hide();
-        debugPrint('隐藏App(失去焦点)');
+        debugPrint('隐藏窗口(失去焦点)');
       }
     });
     super.onWindowBlur();
+  }
+
+  @override
+  void onWindowFocus() {
+    // 自动聚焦搜索输入框
+    FfaaApp.searchInputNode.requestFocus();
+    super.onWindowFocus();
   }
 
   @override
