@@ -147,6 +147,6 @@ class _AppIconWidgetState extends State<AppIconWidget> {
     }
 
     // 默认图标
-    return Icon(Icons.apps, size: size, color: Colors.grey);
+    return Icon(Icons.error, size: size, color: Colors.grey);
   }
 }

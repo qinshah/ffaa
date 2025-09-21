@@ -93,7 +93,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
       case LogicalKeyboardKey.escape:
         return _escToHideEvent(); // Esc隐藏窗口
       case LogicalKeyboardKey.arrowDown:
-          // TODO 会打断输入法翻页
+        // TODO 会打断输入法翻页
         // 如果在输入，切换到app列表区域选择app
         if (FfaaApp.searchInputNode.hasFocus) {
           // TODO 会切换到右边的清空按钮，应该忽略
@@ -145,8 +145,14 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
     // TODO 主要颜色使用系统主题色
     // final accentColor = SystemTheme.accentColor.accent;
     final fTheme = FThemes.blue;
-    final lightTheme = fTheme.light.toApproximateMaterialTheme();
-    final darkTheme = fTheme.dark.toApproximateMaterialTheme();
+    final lightTheme = fTheme.light.toApproximateMaterialTheme().copyWith(
+          // 禁用滑动内容后appbar变色
+          appBarTheme: AppBarTheme(scrolledUnderElevation: 0),
+        );
+    final darkTheme = fTheme.dark.toApproximateMaterialTheme().copyWith(
+          // 禁用滑动内容后appbar变色
+          appBarTheme: AppBarTheme(scrolledUnderElevation: 0),
+        );
     return AdaptiveTheme(
       initial: widget.initialThemeMode ?? AdaptiveThemeMode.system,
       light: lightTheme,

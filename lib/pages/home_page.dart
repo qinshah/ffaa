@@ -62,11 +62,10 @@ class _HomePageState extends State<HomePage> {
     if (_searchQuery.isEmpty) {
       return _apps;
     }
-    return _apps.where((app) {
-      return app.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (app.bundleId?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
-              false);
-    }).toList();
+    return _apps
+        .where((app) =>
+            app.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
   }
 
   void _toggleViewMode() {
@@ -168,74 +167,71 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // late final _primaryColor = Theme.of(context).colorScheme.primary;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.apps),
-        title: Text(
-          '应用程序',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-                _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
-            onPressed: _toggleViewMode,
-            tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () => context.push(SettingsPage()),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: Column(
         children: [
-          Card(
-            // 搜索栏
-            child: TextField(
-              autofocus: true,
-              focusNode: FfaaApp.searchInputNode,
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '搜索应用...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
-          // 应用列表
-          Expanded(
-            child: _buildContent(),
-          ),
+          _buildAppBar(),
+          Expanded(child: _buildContent()),
         ],
       ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(children: [
+        IconButton(
+          icon: Icon(
+              _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
+          onPressed: _toggleViewMode,
+          tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
+        ),
+        Expanded(
+          child: TextField(
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey,
+            ),
+            autofocus: true,
+            focusNode: FfaaApp.searchInputNode,
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: '搜索应用',
+              hintStyle: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: _searchQuery.isEmpty
+                    ? null
+                    : () => setState(() {
+                          _searchController.clear();
+                          _searchQuery = '';
+                        }),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+            ),
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () => context.push(SettingsPage()),
+        ),
+      ]),
     );
   }
 
