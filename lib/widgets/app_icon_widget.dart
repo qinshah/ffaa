@@ -7,15 +7,15 @@ import 'package:app_list/app_list.dart';
 class AppIconWidget extends StatefulWidget {
   final AppInfo appInfo;
   final bool isGridView;
-  final VoidCallback? onTap;
-  final Function(Offset) onSecondaryTap;
+  final VoidCallback? appLaunchCall;
+  final Function(Offset) appContextMenuBuilder;
 
   const AppIconWidget({
     super.key,
     required this.appInfo,
     this.isGridView = true,
-    this.onTap,
-    required this.onSecondaryTap,
+    this.appLaunchCall,
+    required this.appContextMenuBuilder,
   });
 
   @override
@@ -35,12 +35,14 @@ class _AppIconWidgetState extends State<AppIconWidget> {
       },
       child: Focus(
         focusNode: _focusNode,
-        onFocusChange: (value) => setState(() => _isFocus = value),
+        onFocusChange: (value) {
+          if (_isFocus != value) setState(() => _isFocus = value);
+        },
         onKeyEvent: (node, event) {
           // 回车键启动应用
           if (event is KeyDownEvent &&
               event.logicalKey == LogicalKeyboardKey.enter) {
-            widget.onTap?.call();
+            widget.appLaunchCall?.call();
             return KeyEventResult.handled;
           } else if (!FfaaApp.searchInputNode.hasFocus &&
               ![
@@ -56,9 +58,13 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           return KeyEventResult.ignored;
         },
         child: GestureDetector(
-          onTap: widget.onTap,
+          onTap: widget.appLaunchCall,
           onSecondaryTapDown: (details) {
-            widget.onSecondaryTap(details.globalPosition);
+            widget.appContextMenuBuilder(details.globalPosition);
+          },
+          onLongPressStart: (details) async {
+            await widget.appContextMenuBuilder(details.globalPosition);
+            _focusNode.requestFocus();
           },
           child: widget.isGridView
               ? _buildGridItem(context)

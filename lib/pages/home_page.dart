@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -18,6 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // TODO 安卓加载应用列表有bug
   final _appList = AppList();
   List<AppInfo> _apps = [];
   bool _isLoading = true;
@@ -75,22 +78,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _launchApp(AppInfo app) async {
-    AppLauncher.launchApp(app).then((succeeded) {
-      if (succeeded) {
+    try {
+      if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
         windowManager.hide();
-        debugPrint('隐藏窗口(启动app后)');
-      } else {
-        // TODO 应用启动失败的处理
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('启动 ${app.name} 失败'),
-            duration: const Duration(seconds: 1),
-            backgroundColor: Colors.red,
-          ),
-        );
+        debugPrint('启动app后隐藏窗口');
       }
-    });
+      await AppLauncher.launchApp(app);
+    } catch (e) {
+      // TODO 应用启动失败的处理
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('启动 ${app.name} 失败: $e'),
+          duration: const Duration(seconds: 1),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showAppContextMenu(AppInfo app, Offset position) {
@@ -339,9 +343,10 @@ class _HomePageState extends State<HomePage> {
         return AppIconWidget(
           appInfo: apps[index],
           isGridView: true,
-          onTap: () => _launchApp(apps[index]),
-          onSecondaryTap: (position) =>
-              _showAppContextMenu(apps[index], position),
+          appLaunchCall: () => _launchApp(apps[index]),
+          appContextMenuBuilder: (position) {
+            _showAppContextMenu(apps[index], position);
+          },
         );
       },
     );
@@ -356,8 +361,8 @@ class _HomePageState extends State<HomePage> {
         return AppIconWidget(
           appInfo: apps[index],
           isGridView: false,
-          onTap: () => _launchApp(apps[index]),
-          onSecondaryTap: (position) =>
+          appLaunchCall: () => _launchApp(apps[index]),
+          appContextMenuBuilder: (position) =>
               _showAppContextMenu(apps[index], position),
         );
       },
