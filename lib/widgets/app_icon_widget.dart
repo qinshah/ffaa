@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../main.dart';
 import '../models/app_info.dart';
 
 class AppIconWidget extends StatefulWidget {
@@ -28,10 +30,31 @@ class _AppIconWidgetState extends State<AppIconWidget> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => _focusNode.requestFocus(),
+      onHover: (event) {
+        if (!_isFocus) _focusNode.requestFocus();
+      },
       child: Focus(
         focusNode: _focusNode,
         onFocusChange: (value) => setState(() => _isFocus = value),
+        onKeyEvent: (node, event) {
+          // 回车键启动应用
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.enter) {
+            widget.onTap?.call();
+            return KeyEventResult.handled;
+          } else if (!FfaaApp.searchInputNode.hasFocus &&
+              ![
+                LogicalKeyboardKey.arrowLeft,
+                LogicalKeyboardKey.arrowRight,
+                LogicalKeyboardKey.arrowDown,
+                LogicalKeyboardKey.arrowUp,
+                LogicalKeyboardKey.tab,
+              ].contains(event.logicalKey)) {
+            // 自动聚焦搜索输入框
+            FfaaApp.searchInputNode.requestFocus();
+          }
+          return KeyEventResult.ignored;
+        },
         child: GestureDetector(
           onTap: widget.onTap,
           onSecondaryTapDown: (details) {

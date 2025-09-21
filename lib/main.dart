@@ -50,8 +50,8 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
     windowManager.addListener(this);
     // 监听托盘事件
     trayManager.addListener(this);
-    // 监听键盘事件(Esc隐藏窗口)
-    HardwareKeyboard.instance.addHandler(_escToHideApp);
+    // 监听键盘事件
+    HardwareKeyboard.instance.addHandler(_onKeyEvent);
     // 托盘菜单
     _initTrayMenu();
     super.initState();
@@ -87,20 +87,40 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   @override
   void onTrayIconRightMouseDown() => trayManager.popUpContextMenu();
 
-  /// Esc隐藏窗口
-  bool _escToHideApp(KeyEvent event) {
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.escape) {
-      windowManager.hide();
-      debugPrint('Esc隐藏窗口');
-      return true;
+  bool _onKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.escape:
+        return _escToHideEvent(); // Esc隐藏窗口
+      case LogicalKeyboardKey.arrowDown:
+          // TODO 会打断输入法翻页
+        // 如果在输入，切换到app列表区域选择app
+        if (FfaaApp.searchInputNode.hasFocus) {
+          // TODO 会切换到右边的清空按钮，应该忽略
+          FfaaApp.searchInputNode.nextFocus();
+        }
+        return false;
+      default:
+        return false;
     }
-    return false;
+  }
+
+  /// Esc隐藏窗口
+  bool _escToHideEvent() {
+    windowManager.hide();
+    debugPrint('Esc隐藏窗口');
+    return true;
+  }
+
+  /// 聚焦搜索输入框
+  bool _focusSearchInput() {
+    FfaaApp.searchInputNode.requestFocus();
+    return true;
   }
 
   @override
   void dispose() {
-    HardwareKeyboard.instance.removeHandler(_escToHideApp);
+    HardwareKeyboard.instance.removeHandler(_onKeyEvent);
     super.dispose();
   }
 
@@ -116,12 +136,9 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
     super.onWindowBlur();
   }
 
+  // 窗口获得焦点时自动聚焦搜索输入框
   @override
-  void onWindowFocus() {
-    // 自动聚焦搜索输入框
-    FfaaApp.searchInputNode.requestFocus();
-    super.onWindowFocus();
-  }
+  void onWindowFocus() => _focusSearchInput();
 
   @override
   Widget build(BuildContext context) {
