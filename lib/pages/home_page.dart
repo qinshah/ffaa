@@ -3,8 +3,7 @@ import 'package:window_manager/window_manager.dart';
 
 import '../utils/nav.dart';
 import '../main.dart';
-import '../models/app_info.dart';
-import '../services/app_list_service.dart';
+import 'package:app_list/app_list.dart';
 import '../widgets/app_icon_widget.dart';
 import '../utils/app_launcher.dart';
 import 'settings_page.dart';
@@ -19,6 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _appList = AppList();
   List<AppInfo> _apps = [];
   bool _isLoading = true;
   String? _error;
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      final apps = await AppListService.getInstalledApps();
+      final apps = await _appList.getInstalledApps();
       setState(() {
         _apps = apps;
         _isLoading = false;

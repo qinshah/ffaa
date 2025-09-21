@@ -50,14 +50,16 @@ class FfaaApp extends StatefulWidget {
 class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   @override
   void initState() {
-    // 监听窗口事件
-    windowManager.addListener(this);
-    // 监听托盘事件
-    trayManager.addListener(this);
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // 监听窗口事件
+      windowManager.addListener(this);
+      // 监听托盘事件
+      trayManager.addListener(this);
+      // 托盘菜单
+      _initTrayMenu();
+    }
     // 监听键盘事件
     HardwareKeyboard.instance.addHandler(_onKeyEvent);
-    // 托盘菜单
-    _initTrayMenu();
     super.initState();
   }
 

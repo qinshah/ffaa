@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  app_list:
+    path: Plugin/app_list
   forui: ^0.15.1 # shadcn设计语言
   path_provider: ^2.1.1 # 文件路径
   process: ^5.0.0 # 进程

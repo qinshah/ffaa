@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:process/process.dart';
-import '../models/app_info.dart';
+import 'package:app_list/app_list.dart';
 
 class AppLauncher {
   static const ProcessManager _processManager = LocalProcessManager();

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../main.dart';
-import '../models/app_info.dart';
+import 'package:app_list/app_list.dart';
 
 class AppIconWidget extends StatefulWidget {
   final AppInfo appInfo;
