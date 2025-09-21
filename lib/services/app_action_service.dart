@@ -41,6 +41,7 @@ class AppActionService {
       windowManager.hide();
       debugPrint('主动隐藏窗口');
     } else {
+      windowManager.setSkipTaskbar(true); // 隐藏任务栏
       await windowManager.show();
       windowManager.focus();
       debugPrint('主动显示窗口');
@@ -63,8 +64,8 @@ class AppActionService {
     AppActionService(
       '隐藏/显示',
       hotKey: HotKey(
-        key: PhysicalKeyboardKey.keyH,
-        modifiers: [HotKeyModifier.alt],
+        key: PhysicalKeyboardKey.keyS,
+        modifiers: [HotKeyModifier.control],
       ),
       keyDownAction: taggleShowWindow,
     ),

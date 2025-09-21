@@ -322,14 +322,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildGridView(List<AppInfo> apps) {
+    // TODO 换用更流畅的宫格视图
     return GridView.builder(
       key: PageStorageKey('GridView'),
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 120,
-        childAspectRatio: 0.85,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        mainAxisExtent: 120,
+        childAspectRatio: 1,
+        crossAxisSpacing: 6,
+        mainAxisSpacing: 6,
       ),
       itemCount: apps.length,
       itemBuilder: (context, index) {
@@ -347,7 +349,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildListView(List<AppInfo> apps) {
     return ListView.builder(
       key: PageStorageKey('ListView'),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
       itemCount: apps.length,
       itemBuilder: (context, index) {
         return AppIconWidget(
