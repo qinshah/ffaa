@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:process/process.dart';
 import '../models/app_info.dart';
 
-class MacOSAppService {
+class MacAppListService {
   static const ProcessManager _processManager = LocalProcessManager();
 
   // 应用目录列表

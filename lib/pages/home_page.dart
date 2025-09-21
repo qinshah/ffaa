@@ -4,7 +4,7 @@ import 'package:window_manager/window_manager.dart';
 import '../utils/nav.dart';
 import '../main.dart';
 import '../models/app_info.dart';
-import '../services/platform_service.dart';
+import '../services/app_list_service.dart';
 import '../widgets/app_icon_widget.dart';
 import '../utils/app_launcher.dart';
 import 'settings_page.dart';
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      final apps = await PlatformService.getInstalledApps();
+      final apps = await AppListService.getInstalledApps();
       setState(() {
         _apps = apps;
         _isLoading = false;

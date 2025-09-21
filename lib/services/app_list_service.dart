@@ -1,12 +1,12 @@
 import 'dart:io';
 import '../models/app_info.dart';
-import 'macos_app_service.dart';
+import 'mac_app_list_service.dart';
 
-class PlatformService {
+class AppListService {
   static Future<List<AppInfo>> getInstalledApps() async {
     switch (Platform.operatingSystem) {
       case 'macos':
-        return await MacOSAppService.getInstalledApps();
+        return await MacAppListService.getInstalledApps();
       case 'windows':
         // TODO: 实现Windows平台支持
         throw UnimplementedError('Windows平台暂未实现');
