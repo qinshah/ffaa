@@ -23,10 +23,4 @@ class PlatformService {
         throw UnimplementedError('不支持的平台: ${Platform.operatingSystem}');
     }
   }
-
-  static bool get isMacOS => Platform.isMacOS;
-  static bool get isWindows => Platform.isWindows;
-  static bool get isLinux => Platform.isLinux;
-  static bool get isAndroid => Platform.isAndroid;
-  static bool get isIOS => Platform.isIOS;
 }

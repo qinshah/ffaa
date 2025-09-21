@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:ffaa/services/app_action_service.dart';
 import 'package:flutter/material.dart';
@@ -11,17 +13,19 @@ import 'pages/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 窗口管理
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = const WindowOptions(
-    skipTaskbar: true, // 隐藏任务栏
-    titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
-    windowButtonVisibility: false, // 隐藏窗口按钮
-  );
-  windowManager.waitUntilReadyToShow(windowOptions, windowManager.show);
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // 窗口管理
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = const WindowOptions(
+      skipTaskbar: true, // 隐藏任务栏
+      titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
+      windowButtonVisibility: false, // 隐藏窗口按钮
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, windowManager.show);
 
-  // 快捷键注册
-  AppActionService.registerHitKey();
+    // 快捷键注册
+    AppActionService.registerHitKey();
+  }
 
   // 初始化加载系统主题色
   await SystemTheme.accentColor.load();

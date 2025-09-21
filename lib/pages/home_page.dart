@@ -172,12 +172,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          _buildAppBar(),
-          Expanded(child: _buildContent()),
-        ],
-      ),
+      appBar: AppBar(toolbarHeight: 0),
+      body: Column(children: [
+        _buildAppBar(),
+        Expanded(child: _buildContent()),
+      ]),
     );
   }
 
