@@ -209,14 +209,17 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.grey,
               ),
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: _searchQuery.isEmpty
-                    ? null
-                    : () => setState(() {
-                          _searchController.clear();
-                          _searchQuery = '';
-                        }),
+              suffixIcon: FocusScope(
+                canRequestFocus: false,
+                child: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _searchQuery.isEmpty
+                      ? null
+                      : () => setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          }),
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -227,9 +230,12 @@ class _HomePageState extends State<HomePage> {
             onChanged: (value) => setState(() => _searchQuery = value),
           ),
         ),
-        IconButton(
-          icon: Icon(Icons.settings),
-          onPressed: () => context.push(SettingsPage()),
+        FocusScope(
+          canRequestFocus: false,
+          child: IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => context.push(SettingsPage()),
+          ),
         ),
       ]),
     );

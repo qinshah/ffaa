@@ -96,7 +96,6 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
         // TODO 会打断输入法翻页
         // 如果在输入，切换到app列表区域选择app
         if (FfaaApp.searchInputNode.hasFocus) {
-          // TODO 会切换到右边的清空按钮，应该忽略
           FfaaApp.searchInputNode.nextFocus();
         }
         return false;

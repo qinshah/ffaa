@@ -140,7 +140,6 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           borderRadius: BorderRadius.circular(size * 0.2),
           image: DecorationImage(
             image: FileImage(File(widget.appInfo.iconPath!)),
-            // fit: BoxFit.cover,
           ),
         ),
       );
