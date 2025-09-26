@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -64,18 +65,18 @@ class AppActionService {
     AppActionService(
       '隐藏/显示',
       hotKey: HotKey(
-        key: PhysicalKeyboardKey.keyS,
-        modifiers: [HotKeyModifier.control],
+        key: PhysicalKeyboardKey.keyZ,
+        modifiers: [kDebugMode ? HotKeyModifier.alt : HotKeyModifier.control],
       ),
       keyDownAction: taggleShowWindow,
     ),
-    AppActionService(
-      '设置',
-      hotKey: HotKey(
-        key: PhysicalKeyboardKey.keyS,
-        modifiers: [HotKeyModifier.alt],
-      ),
-      keyDownAction: openSettings,
-    ),
+    // AppActionService(
+    //   '设置',
+    //   hotKey: HotKey(
+    //     key: PhysicalKeyboardKey.keyS,
+    //     modifiers: [HotKeyModifier.alt],
+    //   ),
+    //   keyDownAction: openSettings,
+    // ),
   ];
 }

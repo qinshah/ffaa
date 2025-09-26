@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:android_intent_plus/android_intent.dart';
-import 'package:android_intent_plus/flag.dart';
 import 'package:external_app_launcher/external_app_launcher.dart';
 import 'package:process/process.dart';
 import 'package:app_list/app_list.dart';

@@ -67,13 +67,13 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   void _initTrayMenu() async {
     await trayManager.setIcon('assets/img/tray-logo.png');
     final menu = Menu(items: [
-      MenuItem(
-        label: '设置',
-        onClick: (_) {
-          AppActionService.openSettings(null);
-        },
-      ),
-      MenuItem.separator(),
+      // MenuItem(
+      //   label: '设置',
+      //   onClick: (_) {
+      //     AppActionService.openSettings(null);
+      //   },
+      // ),
+      // MenuItem.separator(),
       MenuItem(
         label: '退出',
         onClick: (_) {
@@ -167,7 +167,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
           // 空白区域均可拖拽移动窗口
           onPanStart: (_) => windowManager.startDragging(),
           child: MaterialApp(
-            debugShowCheckedModeBanner: false,
+            // debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: darkTheme,
             localizationsDelegates: FLocalizations.localizationsDelegates,
