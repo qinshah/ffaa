@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:forui/widgets/tabs.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
@@ -23,43 +24,36 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(title: const Text('设置'), centerTitle: true),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text('系统主题色'),
-            subtitle: const Text('切换待开发'),
-            trailing: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: SystemTheme.accentColor.accent,
-                shape: BoxShape.circle,
+          // ListTile(
+          //   title: const Text('系统主题色'),
+          //   subtitle: const Text('切换待开发'),
+          //   trailing: Container(
+          //     width: 24,
+          //     height: 24,
+          //     decoration: BoxDecoration(
+          //       color: SystemTheme.accentColor.accent,
+          //       shape: BoxShape.circle,
+          //     ),
+          //   ),
+          // ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              const Text('主题亮暗(深色模式)', style: TextStyle(fontSize: 16)),
+              Spacer(),
+              SizedBox(
+                width: 300,
+                child: FTabs(
+                  initialIndex: _themeManager.mode.index,
+                  children: AdaptiveThemeMode.values.map((mode) {
+                    return FTabEntry(label: Text(mode.name), child: SizedBox());
+                  }).toList(),
+                  onChange: (index) => setState(() {
+                    _themeManager.setThemeMode(AdaptiveThemeMode.values[index]);
+                  }),
+                ),
               ),
-            ),
-          ),
-          ListTile(
-            title: const Text('深色模式跟随系统'),
-            trailing: Switch(
-              value: _themeManager.mode.isSystem,
-              onChanged: (value) {
-                setState(() {
-                  value ? _themeManager.setSystem() : _themeManager.setLight();
-                });
-              },
-            ),
-          ),
-          ListTile(
-            title: const Text('深色模式'),
-            trailing: Switch(
-              value: AdaptiveTheme.of(context).mode.isDark,
-              onChanged: _themeManager.mode.isSystem
-                  ? null
-                  : (value) {
-                      setState(() {
-                        value
-                            ? _themeManager.setDark()
-                            : _themeManager.setLight();
-                      });
-                    },
-            ),
+            ]),
           ),
           const Divider(),
           const Padding(
@@ -69,26 +63,26 @@ class _SettingsPageState extends State<SettingsPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          ...AppActionService.values.asMap().entries.map(
-            (entry) {
-              final index = entry.key;
-              final action = entry.value;
-              return ListTile(
-                title: Text(action.name),
-                subtitle: Text(_formatHotKey(action.hotKey)),
-                trailing: _isRecordingHotkey && _recordingActionIndex == index
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _startRecordingHotkey(index),
-                      ),
-              );
-            },
-          ),
+          // ...AppActionService.values.asMap().entries.map(
+          //   (entry) {
+          //     final index = entry.key;
+          //     final action = entry.value;
+          //     return ListTile(
+          //       title: Text(action.name),
+          //       subtitle: Text(_formatHotKey(action.hotKey)),
+          //       trailing: _isRecordingHotkey && _recordingActionIndex == index
+          //           ? const SizedBox(
+          //               width: 20,
+          //               height: 20,
+          //               child: CircularProgressIndicator(strokeWidth: 2),
+          //             )
+          //           : IconButton(
+          //               icon: const Icon(Icons.edit),
+          //               onPressed: () => _startRecordingHotkey(index),
+          //             ),
+          //     );
+          //   },
+          // ),
         ],
       ),
     );

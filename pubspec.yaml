@@ -9,18 +9,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  app_list:
+  app_list: # 应用列表
     path: Plugin/app_list
-  forui: ^0.15.1 # shadcn设计语言
+  forui: ^0.15.1 # forui(shadcn设计)
   path_provider: ^2.1.1 # 文件路径
   process: ^5.0.0 # 进程
   window_manager: ^0.5.1 # 窗口管理
   hotkey_manager: ^0.2.3 # 快捷键
-  tray_manager: ^0.5.1
-  adaptive_theme: ^3.7.1+2
-  system_theme: ^3.1.2
-  android_intent_plus: ^6.0.0
-  external_app_launcher: ^4.0.3
+  tray_manager: ^0.5.1 # 托盘
+  adaptive_theme: ^3.7.1+2 # 主题
+  system_theme: ^3.1.2 # 系统主题
+  android_intent_plus: ^6.0.0 # 安卓意图
+  external_app_launcher: ^4.0.3 # 安卓启动外部应用
 
 dev_dependencies:
   flutter_test:

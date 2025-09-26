@@ -149,7 +149,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   Widget build(BuildContext context) {
     // TODO 主要颜色使用系统主题色
     // final accentColor = SystemTheme.accentColor.accent;
-    final fTheme = FThemes.blue;
+    final fTheme = FThemes.green;
     final lightTheme = fTheme.light.toApproximateMaterialTheme().copyWith(
           // 禁用滑动内容后appbar变色
           appBarTheme: AppBarTheme(scrolledUnderElevation: 0),
