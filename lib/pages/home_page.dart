@@ -188,11 +188,13 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(children: [
-        IconButton(
-          icon: Icon(
-              _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
-          onPressed: _toggleViewMode,
-          tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
+        FocusScope(
+          canRequestFocus: false,
+          child: IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _getApps,
+            tooltip: '刷新',
+          ),
         ),
         Expanded(
           child: TextField(
@@ -231,6 +233,15 @@ class _HomePageState extends State<HomePage> {
               filled: true,
             ),
             onChanged: (value) => setState(() => _searchQuery = value),
+          ),
+        ),
+        FocusScope(
+          canRequestFocus: false,
+          child: IconButton(
+            icon: Icon(
+                _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
+            onPressed: _toggleViewMode,
+            tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
           ),
         ),
         FocusScope(
