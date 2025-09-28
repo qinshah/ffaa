@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<AppInfo> get _filteredApps {
-    if (_searchQuery.isEmpty) {
+    if (_searchQuery.length < 2) {
       return _apps;
     }
     return _apps
@@ -239,7 +239,8 @@ class _HomePageState extends State<HomePage> {
           canRequestFocus: false,
           child: IconButton(
             icon: Icon(
-                _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
+              _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view,
+            ),
             onPressed: _toggleViewMode,
             tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
           ),
