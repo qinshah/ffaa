@@ -18,8 +18,8 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = const WindowOptions(
       skipTaskbar: true, // 隐藏任务栏
-      titleBarStyle: TitleBarStyle.hidden, // 隐藏标题栏
-      windowButtonVisibility: false, // 隐藏窗口按钮
+      titleBarStyle: TitleBarStyle.normal, // 标题栏隐藏了会导致顶部标题栏高度区域触控出问题
+      windowButtonVisibility: false, // 隐藏窗口关闭等按钮
     );
     windowManager.waitUntilReadyToShow(windowOptions, windowManager.show);
 
