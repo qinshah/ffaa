@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import '../services/app_action_service.dart';
+import '../../services/app_action_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,63 +16,62 @@ class _SettingsPageState extends State<SettingsPage> {
   late final AdaptiveThemeManager _themeManager = AdaptiveTheme.of(context);
   bool _isRecordingHotkey = false;
 
+  int _recordingActionIndex = -1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('设置'), centerTitle: true),
       body: ListView(
         children: [
-          // ListTile(
-          //   title: const Text('系统主题色'),
-          //   subtitle: const Text('切换待开发'),
-          //   trailing: Container(
-          //     width: 24,
-          //     height: 24,
-          //     decoration: BoxDecoration(
-          //       color: SystemTheme.accentColor.accent,
-          //       shape: BoxShape.circle,
-          //     ),
-          //   ),
-          // ),
-          ListTile(
-            title: const Text('主题亮暗(深色模式)', style: TextStyle(fontSize: 16)),
-            trailing: CupertinoSlidingSegmentedControl(
-              groupValue: _themeManager.mode,
-              onValueChanged: (mode) => _themeManager.setThemeMode(mode!),
-              children: Map.fromIterables(
-                AdaptiveThemeMode.values,
-                AdaptiveThemeMode.values.map((mode) => Text(mode.name)),
+          ListTile(title: Text('外观')),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(children: [
+              ListTile(
+                title: const Text('主题亮暗(深色模式)', style: TextStyle(fontSize: 16)),
+                trailing: CupertinoSlidingSegmentedControl(
+                  groupValue: _themeManager.mode,
+                  onValueChanged: (mode) => _themeManager.setThemeMode(mode!),
+                  children: Map.fromIterables(
+                    AdaptiveThemeMode.values,
+                    AdaptiveThemeMode.values.map((mode) => Text(mode.name)),
+                  ),
+                ),
+              ),
+              ListTile(
+                title: const Text('主题色'),
+                subtitle: const Text('暂不支持切换'),
+                trailing: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ]),
+          ),
+          SizedBox(height: 20),
+          ListTile(title: Text('快捷键')),
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: List.generate(
+                AppActionService.values.length,
+                (index) {
+                  final action = AppActionService.values[index];
+                  return ListTile(
+                    title: Text(action.name),
+                    subtitle: Text(_formatHotKey(action.hotKey)),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    // onTap: ,
+                  );
+                },
               ),
             ),
           ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              '快捷键设置',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          // ...AppActionService.values.asMap().entries.map(
-          //   (entry) {
-          //     final index = entry.key;
-          //     final action = entry.value;
-          //     return ListTile(
-          //       title: Text(action.name),
-          //       subtitle: Text(_formatHotKey(action.hotKey)),
-          //       trailing: _isRecordingHotkey && _recordingActionIndex == index
-          //           ? const SizedBox(
-          //               width: 20,
-          //               height: 20,
-          //               child: CircularProgressIndicator(strokeWidth: 2),
-          //             )
-          //           : IconButton(
-          //               icon: const Icon(Icons.edit),
-          //               onPressed: () => _startRecordingHotkey(index),
-          //             ),
-          //     );
-          //   },
-          // ),
         ],
       ),
     );

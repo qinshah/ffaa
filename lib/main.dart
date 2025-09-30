@@ -9,7 +9,7 @@ import 'package:forui/theme.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
-import 'pages/home_page.dart';
+import 'view/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

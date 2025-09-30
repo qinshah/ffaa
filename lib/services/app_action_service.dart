@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter/material.dart';
-import '../pages/settings_page.dart';
+import '../view/settings/settings_page.dart';
 
 class AppActionService {
   final String name;

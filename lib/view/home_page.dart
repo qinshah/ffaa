@@ -8,7 +8,7 @@ import '../utils/nav.dart';
 import '../main.dart';
 import '../widgets/app_icon_widget.dart';
 import '../utils/app_launcher.dart';
-import 'settings_page.dart';
+import 'settings/settings_page.dart';
 
 enum ViewMode { grid, list }
 
