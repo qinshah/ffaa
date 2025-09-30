@@ -4,6 +4,7 @@ import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../utils/const.dart';
 import '../utils/nav.dart';
 import '../main.dart';
 import '../widgets/app_icon_widget.dart';
@@ -77,7 +78,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _launchApp(App app) async {
     try {
-      if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      if (Const.isPC) {
         windowManager.hide();
         debugPrint('启动app后隐藏窗口');
       }

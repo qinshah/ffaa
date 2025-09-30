@@ -5,32 +5,44 @@ import 'package:window_manager/window_manager.dart';
 import 'package:flutter/material.dart';
 import '../view/settings/settings_page.dart';
 
-class AppActionService {
+class AppAction {
   final String name;
 
-  HotKey hotKey;
+  HotKey? hotKey;
 
   final ValueChanged<HotKey> keyDownAction;
 
   static BuildContext? _context;
 
-  AppActionService(
+  AppAction(
     this.name, {
-    required this.hotKey,
+    this.hotKey,
     required this.keyDownAction,
   });
 
-  /// 设置全局上下文
-  static void setContext(BuildContext context) {
-    _context = context;
+  /// 重新设置快捷键
+  void reSetHotKey(HotKey newHotKey) {
+    if (hotKey != null) clearHotKey(hotKey!);
+    hotKey = newHotKey;
+    hotKeyManager.register(
+      hotKey!,
+      keyDownHandler: keyDownAction,
+    );
+  }
+
+  /// 清除快捷键
+  void clearHotKey(HotKey existingHotKey) {
+    hotKeyManager.unregister(existingHotKey);
+    hotKey = null;
   }
 
   /// 注册快捷键
-  static void registerHitKey() {
+  static void registerAllHotKey() {
     hotKeyManager.unregisterAll();
     for (var action in values) {
+      if (action.hotKey == null) continue;
       hotKeyManager.register(
-        action.hotKey,
+        action.hotKey!,
         keyDownHandler: action.keyDownAction,
       );
     }
@@ -61,14 +73,18 @@ class AppActionService {
     }
   }
 
-  static final values = <AppActionService>[
-    AppActionService(
+  static final values = <AppAction>[
+    AppAction(
       '隐藏/显示',
       hotKey: HotKey(
         key: PhysicalKeyboardKey.keyZ,
         modifiers: [kDebugMode ? HotKeyModifier.alt : HotKeyModifier.control],
       ),
       keyDownAction: taggleShowWindow,
+    ),
+    AppAction(
+      '其它待开发功能',
+      keyDownAction: (_) {},
     ),
     // AppActionService(
     //   '设置',

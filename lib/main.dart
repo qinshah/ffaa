@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:ffaa/services/app_action_service.dart';
+import 'package:ffaa/services/app_action.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:forui/localizations.dart';
@@ -9,11 +9,12 @@ import 'package:forui/theme.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
+import 'utils/const.dart';
 import 'view/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (Const.isPC) {
     // 窗口管理
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = const WindowOptions(
@@ -26,7 +27,7 @@ Future<void> main() async {
     windowManager.waitUntilReadyToShow(windowOptions, windowManager.show);
 
     // 快捷键注册
-    AppActionService.registerHitKey();
+    AppAction.registerAllHotKey();
   }
 
   // 初始化加载系统主题色
@@ -52,7 +53,7 @@ class FfaaApp extends StatefulWidget {
 class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
   @override
   void initState() {
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    if (Const.isPC) {
       // 监听窗口事件
       windowManager.addListener(this);
       // 监听托盘事件
@@ -89,7 +90,7 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
 
   // 左键托盘同样切换隐藏/显示窗口
   @override
-  void onTrayIconMouseDown() => AppActionService.taggleShowWindow(null);
+  void onTrayIconMouseDown() => AppAction.taggleShowWindow(null);
 
 // 右键托盘弹出菜单
   @override
@@ -174,11 +175,6 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
             darkTheme: darkTheme,
             localizationsDelegates: FLocalizations.localizationsDelegates,
             supportedLocales: FLocalizations.supportedLocales,
-            builder: (context, child) {
-              // 设置全局上下文供AppActionService使用
-              AppActionService.setContext(context);
-              return child!;
-            },
             home: const HomePage(),
           ),
         );
