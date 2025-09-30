@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +22,7 @@ class AppIconWidget extends StatefulWidget {
 }
 
 class _AppIconWidgetState extends State<AppIconWidget> {
+  static final _iconCache = <String, Widget>{};
   bool _isFocus = false;
   final _focusNode = FocusNode();
   late final _primaryColor = Theme.of(context).colorScheme.primary;
@@ -88,7 +88,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
               width: 2,
             ),
           ),
-          child: _buildIcon(64),
+          child: _cacheableIcon(64),
         ),
         const SizedBox(height: 8),
         Flexible(
@@ -116,7 +116,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
       ),
       child: Row(
         children: [
-          _buildIcon(40),
+          _cacheableIcon(40),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -135,21 +135,26 @@ class _AppIconWidgetState extends State<AppIconWidget> {
     );
   }
 
-  // TODO 图标加载优化
-  Widget _buildIcon(double size) {
-    return FutureBuilder(
-      future: appManager.getAppIconProvider(widget.app),
-      builder: (context, snapshot) {
-        Widget icon;
-        if (snapshot.hasError || snapshot.data == null) {
-          icon = Icon(Icons.error);
-        } else if (snapshot.hasData) {
-          icon = Image(image: snapshot.data!);
-        } else {
-          icon = Icon(Icons.hourglass_empty);
-        }
-        return SizedBox(width: size, height: size, child: icon);
-      },
-    );
+  Widget _cacheableIcon(double size) {
+    final cachedIcon = _iconCache[widget.app.packageName];
+    if (cachedIcon != null) {
+      return SizedBox(width: size, height: size, child: cachedIcon);
+    } else {
+      return FutureBuilder(
+        future: appManager.getAppIconProvider(widget.app),
+        builder: (context, snapshot) {
+          Widget icon;
+          if (snapshot.hasError || snapshot.data == null) {
+            icon = Icon(Icons.error);
+          } else if (snapshot.hasData) {
+            icon = Image(image: snapshot.data!);
+          } else {
+            icon = Icon(Icons.hourglass_empty);
+          }
+          _iconCache[widget.app.packageName] = icon;
+          return SizedBox(width: size, height: size, child: icon);
+        },
+      );
+    }
   }
 }
