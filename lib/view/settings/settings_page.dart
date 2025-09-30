@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter/services.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import '../../services/app_action.dart';
 import '../../utils/const.dart';
 import 'hot_key_dialog.dart';
@@ -14,6 +16,16 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late final AdaptiveThemeManager _themeManager = AdaptiveTheme.of(context);
+
+  /// 获取快捷键的显示名称，包含备用方案以防止release模式下debugName为null
+  String _getHotKeyLabel(HotKey hotKey) {
+    final List<String> parts = [];
+    for (final modifier in hotKey.modifiers!) {
+      parts.add(modifier.physicalKeys[0].keyLabel);
+    }
+    parts.add((hotKey.key as PhysicalKeyboardKey).keyLabel);
+    return parts.join(' + ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +75,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: Text(action.name),
                     trailing: Text(
                       Const.isPC
-                          ? action.hotKey?.debugName ?? '未设置'
+                          ? action.hotKey != null
+                              ? _getHotKeyLabel(action.hotKey!)
+                              : '未设置'
                           : '手机暂不支持快捷键',
                     ),
                     onTap: Const.isPC

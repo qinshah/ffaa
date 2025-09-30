@@ -49,11 +49,8 @@ class _HotKeyDialogState extends State<HotKeyDialog> {
     return AlertDialog(
       title: const Text('设置快捷键'),
       content: Text([
-        ...(_modifiers).map((e) {
-          final firstPhysicalKey = e.physicalKeys.first;
-          return firstPhysicalKey.debugName;
-        }),
-        if (_key != null) (_key as PhysicalKeyboardKey).debugName,
+        ...(_modifiers).map((e) => e.physicalKeys.first.keyLabel),
+        if (_key != null) (_key as PhysicalKeyboardKey).keyLabel,
       ].join(' + ')),
       actions: [
         TextButton(
