@@ -1,7 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:forui/widgets/tabs.dart';
-import 'package:system_theme/system_theme.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import '../services/app_action_service.dart';
@@ -16,7 +15,6 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final AdaptiveThemeManager _themeManager = AdaptiveTheme.of(context);
   bool _isRecordingHotkey = false;
-  int _recordingActionIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -36,24 +34,16 @@ class _SettingsPageState extends State<SettingsPage> {
           //     ),
           //   ),
           // ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(children: [
-              const Text('主题亮暗(深色模式)', style: TextStyle(fontSize: 16)),
-              Spacer(),
-              SizedBox(
-                width: 300,
-                child: FTabs(
-                  initialIndex: _themeManager.mode.index,
-                  children: AdaptiveThemeMode.values.map((mode) {
-                    return FTabEntry(label: Text(mode.name), child: SizedBox());
-                  }).toList(),
-                  onChange: (index) => setState(() {
-                    _themeManager.setThemeMode(AdaptiveThemeMode.values[index]);
-                  }),
-                ),
+          ListTile(
+            title: const Text('主题亮暗(深色模式)', style: TextStyle(fontSize: 16)),
+            trailing: CupertinoSlidingSegmentedControl(
+              groupValue: _themeManager.mode,
+              onValueChanged: (mode) => _themeManager.setThemeMode(mode!),
+              children: Map.fromIterables(
+                AdaptiveThemeMode.values,
+                AdaptiveThemeMode.values.map((mode) => Text(mode.name)),
               ),
-            ]),
+            ),
           ),
           const Divider(),
           const Padding(
@@ -127,7 +117,6 @@ class _SettingsPageState extends State<SettingsPage> {
   void _startRecordingHotkey(int actionIndex) {
     setState(() {
       _isRecordingHotkey = true;
-      _recordingActionIndex = actionIndex;
     });
 
     showDialog(
@@ -141,7 +130,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onPressed: () {
               setState(() {
                 _isRecordingHotkey = false;
-                _recordingActionIndex = -1;
               });
               Navigator.of(context).pop();
             },
@@ -177,7 +165,6 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       AppActionService.values[actionIndex].hotKey = newHotKey;
       _isRecordingHotkey = false;
-      _recordingActionIndex = -1;
     });
 
     Navigator.of(context).pop();
