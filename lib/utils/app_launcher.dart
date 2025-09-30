@@ -1,17 +1,17 @@
 import 'dart:io';
+import 'package:app_manager/app_manager.dart';
 import 'package:external_app_launcher/external_app_launcher.dart';
 import 'package:process/process.dart';
-import 'package:app_list/app_list.dart';
 
 class AppLauncher {
   static const ProcessManager _processManager = LocalProcessManager();
 
-  static Future launchApp(AppInfo appInfo) async {
+  static Future launchApp(App app) async {
     if (Platform.isMacOS) {
-      _launchMacOSApp(appInfo);
+      _launchMacOSApp(app);
     } else if (Platform.isAndroid) {
       // TODO 一些应用打不开
-      LaunchApp.openApp(androidPackageName: appInfo.bundleId);
+      LaunchApp.openApp(androidPackageName: app.packageName);
       // final intent = AndroidIntent(
       //   package: appInfo.bundleId,
       //   action: 'android.intent.action.MAIN',
@@ -24,12 +24,12 @@ class AppLauncher {
     }
   }
 
-  static Future<bool> _launchMacOSApp(AppInfo appInfo) async {
+  static Future<bool> _launchMacOSApp(App app) async {
     try {
       final result = await _processManager.run([
         'open',
         '-a',
-        appInfo.path,
+        app.path!, // 空安全
       ]);
 
       return result.exitCode == 0;
@@ -38,13 +38,13 @@ class AppLauncher {
     }
   }
 
-  static Future<bool> openAppInFinder(AppInfo appInfo) async {
+  static Future<bool> openAppInFinder(App app) async {
     try {
       if (Platform.isMacOS) {
         final result = await _processManager.run([
           'open',
           '-R',
-          appInfo.path,
+          app.path!, // 空安全
         ]);
         return result.exitCode == 0;
       }

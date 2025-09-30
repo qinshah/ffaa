@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../utils/nav.dart';
 import '../main.dart';
-import 'package:app_list/app_list.dart';
 import '../widgets/app_icon_widget.dart';
 import '../utils/app_launcher.dart';
 import 'settings_page.dart';
@@ -20,9 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // TODO 安卓加载应用列表有bug
-  final _appList = AppList();
-  List<AppInfo> _apps = [];
+  List<App> _apps = [];
   bool _isLoading = true;
   String? _error;
   ViewMode _viewMode = ViewMode.grid;
@@ -48,7 +46,7 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      final apps = await _appList.getInstalledApps();
+      final apps = await appManager.getApps();
       setState(() {
         _apps = apps;
         _isLoading = false;
@@ -61,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  List<AppInfo> get _filteredApps {
+  List<App> get _filteredApps {
     if (_searchQuery.length < 2) {
       return _apps;
     }
@@ -77,7 +75,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _launchApp(AppInfo app) async {
+  Future<void> _launchApp(App app) async {
     try {
       if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
         windowManager.hide();
@@ -97,7 +95,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _showAppContextMenu(AppInfo app, Offset position) {
+  void _showAppContextMenu(App app, Offset position) {
     showMenu(
       context: context,
       position: RelativeRect.fromLTRB(
@@ -141,7 +139,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showAppInfo(AppInfo app) {
+  void _showAppInfo(App app) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -150,15 +148,11 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (app.bundleId != null) ...[
-              Text('Bundle ID: ${app.bundleId}'),
-              const SizedBox(height: 8),
-            ],
-            if (app.version != null) ...[
-              Text('版本: ${app.version}'),
-              const SizedBox(height: 8),
-            ],
-            Text('路径: ${app.path}'),
+            Text('Bundle ID: ${app.packageName}'),
+            const SizedBox(height: 8),
+            Text('版本: ${app.version ?? '未知'}'),
+            const SizedBox(height: 8),
+            Text('路径: ${app.path ?? '未知'}'),
           ],
         ),
         actions: [
@@ -338,7 +332,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildGridView(List<AppInfo> apps) {
+  Widget _buildGridView(List<App> apps) {
     // TODO 换用更流畅的宫格视图
     return GridView.builder(
       key: PageStorageKey('GridView'),
@@ -353,7 +347,7 @@ class _HomePageState extends State<HomePage> {
       itemCount: apps.length,
       itemBuilder: (context, index) {
         return AppIconWidget(
-          appInfo: apps[index],
+          app: apps[index],
           isGridView: true,
           appLaunchCall: () => _launchApp(apps[index]),
           appContextMenuBuilder: (position) {
@@ -364,14 +358,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildListView(List<AppInfo> apps) {
+  Widget _buildListView(List<App> apps) {
     return ListView.builder(
       key: PageStorageKey('ListView'),
       padding: const EdgeInsets.all(16),
       itemCount: apps.length,
       itemBuilder: (context, index) {
         return AppIconWidget(
-          appInfo: apps[index],
+          app: apps[index],
           isGridView: false,
           appLaunchCall: () => _launchApp(apps[index]),
           appContextMenuBuilder: (position) =>

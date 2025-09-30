@@ -1,18 +1,18 @@
 import 'dart:io';
+import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../main.dart';
-import 'package:app_list/app_list.dart';
 
 class AppIconWidget extends StatefulWidget {
-  final AppInfo appInfo;
+  final App app;
   final bool isGridView;
   final VoidCallback? appLaunchCall;
   final Function(Offset) appContextMenuBuilder;
 
   const AppIconWidget({
     super.key,
-    required this.appInfo,
+    required this.app,
     this.isGridView = true,
     this.appLaunchCall,
     required this.appContextMenuBuilder,
@@ -93,7 +93,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
         const SizedBox(height: 8),
         Flexible(
           child: Text(
-            widget.appInfo.name,
+            widget.app.name,
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -120,7 +120,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              widget.appInfo.name,
+              widget.app.name,
               style: TextStyle(
                 color: _isFocus ? Colors.white : null,
                 fontSize: 16,
@@ -135,23 +135,21 @@ class _AppIconWidgetState extends State<AppIconWidget> {
     );
   }
 
-  // TODO 图标统一尺寸和形状
+  // TODO 图标加载优化
   Widget _buildIcon(double size) {
-    if (widget.appInfo.iconPath != null &&
-        File(widget.appInfo.iconPath!).existsSync()) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(size * 0.2),
-          image: DecorationImage(
-            image: FileImage(File(widget.appInfo.iconPath!)),
-          ),
-        ),
-      );
-    }
-
-    // 默认图标
-    return Icon(Icons.error, size: size, color: Colors.grey);
+    return FutureBuilder(
+      future: appManager.getAppIconProvider(widget.app),
+      builder: (context, snapshot) {
+        Widget icon;
+        if (snapshot.hasError || snapshot.data == null) {
+          icon = Icon(Icons.error);
+        } else if (snapshot.hasData) {
+          icon = Image(image: snapshot.data!);
+        } else {
+          icon = Icon(Icons.hourglass_empty);
+        }
+        return SizedBox(width: size, height: size, child: icon);
+      },
+    );
   }
 }

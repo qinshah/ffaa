@@ -6,6 +6,7 @@
 
 #include "generated_plugin_registrant.h"
 
+#include <app_manager/app_manager_plugin.h>
 #include <hotkey_manager_linux/hotkey_manager_linux_plugin.h>
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <system_theme/system_theme_plugin.h>
@@ -13,6 +14,9 @@
 #include <window_manager/window_manager_plugin.h>
 
 void fl_register_plugins(FlPluginRegistry* registry) {
+  g_autoptr(FlPluginRegistrar) app_manager_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "AppManagerPlugin");
+  app_manager_plugin_register_with_registrar(app_manager_registrar);
   g_autoptr(FlPluginRegistrar) hotkey_manager_linux_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "HotkeyManagerLinuxPlugin");
   hotkey_manager_linux_plugin_register_with_registrar(hotkey_manager_linux_registrar);

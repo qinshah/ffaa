@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_manager
   hotkey_manager_linux
   screen_retriever_linux
   system_theme
