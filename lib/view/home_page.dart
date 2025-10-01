@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
@@ -25,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   String? _error;
   ViewMode _viewMode = ViewMode.grid;
-  String _searchQuery = '';
+  String _searchText = '';
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -61,13 +59,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<App> get _filteredApps {
-    if (_searchQuery.length < 2) {
-      return _apps;
-    }
-    return _apps
-        .where((app) =>
-            app.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    return switch (_searchText.length) {
+      0 => _apps,
+      1 => _apps
+          .where((app) =>
+              app.name.toLowerCase().startsWith(_searchText.toLowerCase()))
+          .toList(),
+      _ => _apps
+          .where((app) =>
+              app.name.toLowerCase().contains(_searchText.toLowerCase()))
+          .toList(),
+    };
   }
 
   void _toggleViewMode() {
@@ -213,11 +215,11 @@ class _HomePageState extends State<HomePage> {
                 canRequestFocus: false,
                 child: IconButton(
                   icon: const Icon(Icons.clear),
-                  onPressed: _searchQuery.isEmpty
+                  onPressed: _searchText.isEmpty
                       ? null
                       : () => setState(() {
                             _searchController.clear();
-                            _searchQuery = '';
+                            _searchText = '';
                           }),
                 ),
               ),
@@ -227,7 +229,7 @@ class _HomePageState extends State<HomePage> {
               ),
               filled: true,
             ),
-            onChanged: (value) => setState(() => _searchQuery = value),
+            onChanged: (value) => setState(() => _searchText = value),
           ),
         ),
         FocusScope(
@@ -315,11 +317,8 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              _searchQuery.isEmpty ? '没有找到应用' : '没有匹配的应用',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-              ),
+              '没有找到应用',
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -349,6 +348,7 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         return AppIconWidget(
           app: apps[index],
+          searchText: _searchText,
           isGridView: true,
           appLaunchCall: () => _launchApp(apps[index]),
           appContextMenuBuilder: (position) {
@@ -367,6 +367,7 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         return AppIconWidget(
           app: apps[index],
+          searchText: _searchText,
           isGridView: false,
           appLaunchCall: () => _launchApp(apps[index]),
           appContextMenuBuilder: (position) =>

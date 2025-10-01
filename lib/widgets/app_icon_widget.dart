@@ -8,12 +8,14 @@ class AppIconWidget extends StatefulWidget {
   final bool isGridView;
   final VoidCallback? appLaunchCall;
   final Function(Offset) appContextMenuBuilder;
+  final String searchText;
 
   const AppIconWidget({
     super.key,
     required this.app,
     this.isGridView = true,
     this.appLaunchCall,
+    required this.searchText,
     required this.appContextMenuBuilder,
   });
 
@@ -92,8 +94,8 @@ class _AppIconWidgetState extends State<AppIconWidget> {
         ),
         const SizedBox(height: 8),
         Flexible(
-          child: Text(
-            widget.app.name,
+          child: Text.rich(
+            _buildHighlightedText(),
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -119,8 +121,8 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           _cacheableIcon(40),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              widget.app.name,
+            child: Text.rich(
+              _buildHighlightedText(),
               style: TextStyle(
                 color: _isFocus ? Colors.white : null,
                 fontSize: 16,
@@ -133,6 +135,45 @@ class _AppIconWidgetState extends State<AppIconWidget> {
         ],
       ),
     );
+  }
+
+  // TODO 字符串匹配算法
+  TextSpan _buildHighlightedText() {
+    if (widget.searchText.isEmpty) {
+      return TextSpan(text: widget.app.name);
+    } else if (widget.searchText.length == 1) {
+      return TextSpan(children: [
+        TextSpan(
+          text: widget.app.name.substring(0, 1),
+          style: TextStyle(color: _primaryColor),
+        ),
+        TextSpan(text: widget.app.name.substring(1)),
+      ]);
+    }
+    final List<TextSpan> spans = [];
+    final String lowerText = widget.app.name.toLowerCase();
+    final String lowerSearchText = widget.searchText.toLowerCase();
+    int start = 0;
+    int index = lowerText.indexOf(lowerSearchText, start);
+    while (index >= 0) {
+      // 添加匹配前的文本
+      if (index > start) {
+        spans.add(TextSpan(text: widget.app.name.substring(start, index)));
+      }
+      // 添加高亮的匹配文本
+      spans.add(TextSpan(
+        text:
+            widget.app.name.substring(index, index + widget.searchText.length),
+        style: TextStyle(color: _primaryColor),
+      ));
+      start = index + widget.searchText.length;
+      index = lowerText.indexOf(lowerSearchText, start);
+    }
+    // 添加剩余的文本
+    if (start < widget.app.name.length) {
+      spans.add(TextSpan(text: widget.app.name.substring(start)));
+    }
+    return TextSpan(children: spans);
   }
 
   Widget _cacheableIcon(double size) {
