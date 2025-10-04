@@ -1,11 +1,10 @@
 import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../main.dart';
 
 class AppIconWidget extends StatefulWidget {
   final App app;
   final bool isGridView;
+  final ValueNotifier<App?> selectedAppNotifier;
   final VoidCallback? appLaunchCall;
   final Function(Offset) appContextMenuBuilder;
   final String searchText;
@@ -17,66 +16,69 @@ class AppIconWidget extends StatefulWidget {
     this.appLaunchCall,
     required this.searchText,
     required this.appContextMenuBuilder,
+    required this.selectedAppNotifier,
   });
+
+  static final _iconCache = <String, Widget>{};
+
+  static void clearIconCache() => _iconCache.clear();
 
   @override
   State<AppIconWidget> createState() => _AppIconWidgetState();
 }
 
 class _AppIconWidgetState extends State<AppIconWidget> {
-  static final _iconCache = <String, Widget>{};
-  bool _isFocus = false;
-  final _focusNode = FocusNode();
-  late final _primaryColor = Theme.of(context).colorScheme.primary;
+  final _node = FocusNode();
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onHover: (event) {
-        if (!_isFocus) _focusNode.requestFocus();
+    return GestureDetector(
+      onTap: widget.appLaunchCall,
+      onSecondaryTapDown: (details) {
+        widget.appContextMenuBuilder(details.globalPosition);
       },
-      child: Focus(
-        focusNode: _focusNode,
-        onFocusChange: (value) {
-          if (_isFocus != value) setState(() => _isFocus = value);
-        },
-        onKeyEvent: (node, event) {
-          // 回车键启动应用
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.enter) {
-            widget.appLaunchCall?.call();
-            return KeyEventResult.handled;
-          } else if (!FfaaApp.searchInputNode.hasFocus &&
-              ![
-                LogicalKeyboardKey.arrowLeft,
-                LogicalKeyboardKey.arrowRight,
-                LogicalKeyboardKey.arrowDown,
-                LogicalKeyboardKey.arrowUp,
-                LogicalKeyboardKey.tab,
-              ].contains(event.logicalKey)) {
-            // 自动聚焦搜索输入框
-            FfaaApp.searchInputNode.requestFocus();
+      onLongPressStart: (details) async {
+        widget.selectedAppNotifier.value = widget.app;
+        widget.appContextMenuBuilder(details.globalPosition);
+      },
+      child: MouseRegion(
+        onHover: (event) {
+          if (!_node.hasFocus) {
+            _node.requestFocus();
           }
-          return KeyEventResult.ignored;
         },
-        child: GestureDetector(
-          onTap: widget.appLaunchCall,
-          onSecondaryTapDown: (details) {
-            widget.appContextMenuBuilder(details.globalPosition);
-          },
-          onLongPressStart: (details) async {
-            await widget.appContextMenuBuilder(details.globalPosition);
-            _focusNode.requestFocus();
-          },
-          child: widget.isGridView
-              ? _buildGridItem(context)
-              : _buildListItem(context),
-        ),
+        child: ValueListenableBuilder(
+            valueListenable: widget.selectedAppNotifier,
+            builder: (context, selectApp, child) {
+              final isSelected =
+                  widget.app.packageName == selectApp?.packageName;
+              return Focus(
+                focusNode: _node,
+                onFocusChange: (hasFocus) {
+                  if (hasFocus && !isSelected) {
+                    widget.selectedAppNotifier.value = widget.app;
+                  }
+                   else if (isSelected && !hasFocus) {
+                    widget.selectedAppNotifier.value = null;
+                  }
+                },
+                child: widget.isGridView
+                    ? _buildGridItem(context, isSelected)
+                    : _buildListItem(context, isSelected),
+              );
+            }),
       ),
     );
   }
 
-  Widget _buildGridItem(BuildContext context) {
+  Widget _buildGridItem(BuildContext context, bool isSelected) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -86,7 +88,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _isFocus ? _primaryColor : Colors.transparent,
+              color: isSelected ? primaryColor : Colors.transparent,
               width: 2,
             ),
           ),
@@ -95,7 +97,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
         const SizedBox(height: 8),
         Flexible(
           child: Text.rich(
-            _buildHighlightedText(),
+            _buildHighlightedText(primaryColor),
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -109,12 +111,13 @@ class _AppIconWidgetState extends State<AppIconWidget> {
     );
   }
 
-  Widget _buildListItem(BuildContext context) {
+  Widget _buildListItem(BuildContext context, bool isSelected) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: _isFocus ? _primaryColor.withAlpha(200) : null,
+        color: isSelected ? primaryColor.withAlpha(200) : null,
       ),
       child: Row(
         children: [
@@ -122,9 +125,9 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           const SizedBox(width: 16),
           Expanded(
             child: Text.rich(
-              _buildHighlightedText(),
+              _buildHighlightedText(primaryColor),
               style: TextStyle(
-                color: _isFocus ? Colors.white : null,
+                color: isSelected ? Colors.white : null,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -138,14 +141,14 @@ class _AppIconWidgetState extends State<AppIconWidget> {
   }
 
   // TODO 字符串匹配算法
-  TextSpan _buildHighlightedText() {
+  TextSpan _buildHighlightedText(Color primaryColor) {
     if (widget.searchText.isEmpty) {
       return TextSpan(text: widget.app.name);
     } else if (widget.searchText.length == 1) {
       return TextSpan(children: [
         TextSpan(
           text: widget.app.name.substring(0, 1),
-          style: TextStyle(color: _primaryColor),
+          style: TextStyle(color: primaryColor),
         ),
         TextSpan(text: widget.app.name.substring(1)),
       ]);
@@ -164,7 +167,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
       spans.add(TextSpan(
         text:
             widget.app.name.substring(index, index + widget.searchText.length),
-        style: TextStyle(color: _primaryColor),
+        style: TextStyle(color: primaryColor),
       ));
       start = index + widget.searchText.length;
       index = lowerText.indexOf(lowerSearchText, start);
@@ -177,7 +180,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
   }
 
   Widget _cacheableIcon(double size) {
-    final cachedIcon = _iconCache[widget.app.packageName];
+    final cachedIcon = AppIconWidget._iconCache[widget.app.packageName];
     if (cachedIcon != null) {
       return SizedBox(width: size, height: size, child: cachedIcon);
     } else {
@@ -192,7 +195,7 @@ class _AppIconWidgetState extends State<AppIconWidget> {
           } else {
             icon = Icon(Icons.hourglass_empty);
           }
-          _iconCache[widget.app.packageName] = icon;
+          AppIconWidget._iconCache[widget.app.packageName] = icon;
           return SizedBox(width: size, height: size, child: icon);
         },
       );

@@ -1,5 +1,6 @@
 import 'package:app_manager/app_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../utils/const.dart';
@@ -20,11 +21,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<App> _apps = [];
+  List<App> _filteredApps = [];
+  final _selectAppNotifier = ValueNotifier<App?>(null);
   bool _isLoading = true;
   String? _error;
   ViewMode _viewMode = ViewMode.grid;
-  String _searchText = '';
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchCntlr = TextEditingController();
 
   @override
   void initState() {
@@ -34,7 +36,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _searchCntlr.dispose();
     super.dispose();
   }
 
@@ -42,14 +44,12 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = true;
       _error = null;
+      AppIconWidget.clearIconCache(); // 清空图标缓存
     });
-
     try {
       final apps = await appManager.getApps();
-      setState(() {
-        _apps = apps;
-        _isLoading = false;
-      });
+      _apps = apps;
+      _filterApp();
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -58,18 +58,24 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  List<App> get _filteredApps {
-    return switch (_searchText.length) {
+  void _filterApp() {
+    final result = switch (_searchCntlr.text.length) {
       0 => _apps,
       1 => _apps
-          .where((app) =>
-              app.name.toLowerCase().startsWith(_searchText.toLowerCase()))
+          .where((app) => app.name
+              .toLowerCase()
+              .startsWith(_searchCntlr.text.toLowerCase()))
           .toList(),
       _ => _apps
           .where((app) =>
-              app.name.toLowerCase().contains(_searchText.toLowerCase()))
+              app.name.toLowerCase().contains(_searchCntlr.text.toLowerCase()))
           .toList(),
     };
+    setState(() {
+      _isLoading = false;
+      _filteredApps = result;
+      _selectAppNotifier.value = result.firstOrNull;
+    });
   }
 
   void _toggleViewMode() {
@@ -78,19 +84,21 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _launchApp(App app) async {
+  Future<void> _launchSelecterApp() async {
+    final selectedApp = _selectAppNotifier.value;
+    if (selectedApp == null) return;
     try {
       if (Const.isPC) {
         windowManager.hide();
         debugPrint('启动app后隐藏窗口');
       }
-      await AppLauncher.launchApp(app);
+      await AppLauncher.launchApp(selectedApp);
     } catch (e) {
       // TODO 应用启动失败的处理
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('启动 ${app.name} 失败: $e'),
+          content: Text('启动 ${selectedApp.name} 失败: $e'),
           duration: const Duration(seconds: 1),
           backgroundColor: Colors.red,
         ),
@@ -116,7 +124,7 @@ class _HomePageState extends State<HomePage> {
               Text('打开'),
             ],
           ),
-          onTap: () => _launchApp(app),
+          onTap: () => _launchSelecterApp(),
         ),
         PopupMenuItem(
           child: const Row(
@@ -168,16 +176,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // late final _primaryColor = Theme.of(context).colorScheme.primary;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(toolbarHeight: 0),
-      body: Column(children: [
-        _buildAppBar(),
-        Expanded(child: _buildContent()),
-      ]),
+    return Focus(
+      child: Scaffold(
+        appBar: AppBar(toolbarHeight: 0),
+        body: Column(children: [
+          _buildAppBar(),
+          Expanded(child: _buildContent()),
+        ]),
+      ),
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        switch (event.logicalKey) {
+          case LogicalKeyboardKey.enter: // 回车启动应用
+            _launchSelecterApp();
+            if (_selectAppNotifier.value != null) {
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          case LogicalKeyboardKey.backspace: // 聚焦搜索框
+            if (FfaaApp.searchInputNode.hasFocus) {
+              return KeyEventResult.ignored;
+            }
+            FfaaApp.searchInputNode.requestFocus();
+            return KeyEventResult.handled;
+          // TODO 光标在末尾时右方向键可切换应用
+          case LogicalKeyboardKey.arrowDown: // 切换应用 // TODO 会打断输入法
+            if (FfaaApp.searchInputNode.hasFocus) {
+              FfaaApp.searchInputNode.nextFocus();
+              return KeyEventResult.handled;
+            } else {
+              return KeyEventResult.ignored;
+            }
+          default:
+            return KeyEventResult.ignored;
+        }
+      },
     );
   }
 
@@ -185,13 +220,11 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(children: [
-        FocusScope(
-          canRequestFocus: false,
-          child: IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _getApps,
-            tooltip: '刷新',
-          ),
+        IconButton(
+          focusNode: FocusNode(skipTraversal: true),
+          icon: Icon(Icons.refresh),
+          onPressed: _getApps,
+          tooltip: '刷新',
         ),
         Expanded(
           child: TextField(
@@ -200,9 +233,8 @@ class _HomePageState extends State<HomePage> {
               fontWeight: FontWeight.w500,
               color: Colors.grey,
             ),
-            autofocus: true,
             focusNode: FfaaApp.searchInputNode,
-            controller: _searchController,
+            controller: _searchCntlr,
             decoration: InputDecoration(
               hintText: '搜索应用',
               hintStyle: TextStyle(
@@ -211,17 +243,15 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.grey,
               ),
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: FocusScope(
-                canRequestFocus: false,
-                child: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: _searchText.isEmpty
-                      ? null
-                      : () => setState(() {
-                            _searchController.clear();
-                            _searchText = '';
-                          }),
-                ),
+              suffixIcon: IconButton(
+                focusNode: FocusNode(skipTraversal: true),
+                icon: const Icon(Icons.clear),
+                onPressed: _searchCntlr.text.isEmpty
+                    ? null
+                    : () {
+                        _searchCntlr.clear();
+                        _filterApp();
+                      },
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -229,25 +259,21 @@ class _HomePageState extends State<HomePage> {
               ),
               filled: true,
             ),
-            onChanged: (value) => setState(() => _searchText = value),
+            onChanged: (_) => _filterApp(),
           ),
         ),
-        FocusScope(
-          canRequestFocus: false,
-          child: IconButton(
-            icon: Icon(
-              _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view,
-            ),
-            onPressed: _toggleViewMode,
-            tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
+        IconButton(
+          focusNode: FocusNode(skipTraversal: true),
+          icon: Icon(
+            _viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view,
           ),
+          onPressed: _toggleViewMode,
+          tooltip: _viewMode == ViewMode.grid ? '列表视图' : '网格视图',
         ),
-        FocusScope(
-          canRequestFocus: false,
-          child: IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () => context.push(SettingsPage()),
-          ),
+        IconButton(
+          focusNode: FocusNode(skipTraversal: true),
+          icon: Icon(Icons.settings),
+          onPressed: () => context.push(SettingsPage()),
         ),
       ]),
     );
@@ -304,8 +330,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    final filteredApps = _filteredApps;
-    if (filteredApps.isEmpty) {
+    if (_filteredApps.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -325,11 +350,13 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    if (_viewMode == ViewMode.grid) {
-      return _buildGridView(filteredApps);
-    } else {
-      return _buildListView(filteredApps);
-    }
+    // 使用FocusScope修复丢换app可能丢失焦点的bug
+    // 因为这样能让所有app的焦点都存在FocusScope中，不会切到非app焦点导致焦点丢失
+    return FocusScope(
+      child: _viewMode == ViewMode.grid
+          ? _buildGridView(_filteredApps)
+          : _buildListView(_filteredApps),
+    );
   }
 
   Widget _buildGridView(List<App> apps) {
@@ -348,12 +375,13 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         return AppIconWidget(
           app: apps[index],
-          searchText: _searchText,
+          searchText: _searchCntlr.text,
           isGridView: true,
-          appLaunchCall: () => _launchApp(apps[index]),
+          appLaunchCall: _launchSelecterApp,
           appContextMenuBuilder: (position) {
             _showAppContextMenu(apps[index], position);
           },
+          selectedAppNotifier: _selectAppNotifier,
         );
       },
     );
@@ -367,9 +395,10 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         return AppIconWidget(
           app: apps[index],
-          searchText: _searchText,
+          searchText: _searchCntlr.text,
+          selectedAppNotifier: _selectAppNotifier,
           isGridView: false,
-          appLaunchCall: () => _launchApp(apps[index]),
+          appLaunchCall: _launchSelecterApp,
           appContextMenuBuilder: (position) =>
               _showAppContextMenu(apps[index], position),
         );

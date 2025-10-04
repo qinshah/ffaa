@@ -99,13 +99,6 @@ class _FfaaAppState extends State<FfaaApp> with WindowListener, TrayListener {
     switch (event.logicalKey) {
       case LogicalKeyboardKey.escape:
         return _escToHideEvent(); // Esc隐藏窗口
-      case LogicalKeyboardKey.arrowDown:
-        // TODO 会打断输入法翻页
-        // 如果在输入，切换到app列表区域选择app
-        if (FfaaApp.searchInputNode.hasFocus) {
-          FfaaApp.searchInputNode.nextFocus();
-        }
-        return false;
       default:
         return false;
     }
